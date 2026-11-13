@@ -139,6 +139,9 @@ The executable is written to `target\release\spacewiz.exe`. The C runtime is lin
 redistributable is needed. Build from PowerShell or a Developer Command Prompt; Git Bash may pick up GNU
 `link` instead of the MSVC linker.
 
+`package.ps1` builds the portable release zip in `dist\`; it replaces local build paths in the executable
+with generic ones.
+
 ### Project layout
 
 | Path                 | Contents                                                |
