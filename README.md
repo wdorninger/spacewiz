@@ -1,214 +1,167 @@
-<div align="center">
+<p align="center">
+  <img src="docs/logo.svg" width="96" alt="spacewiz">
+</p>
 
-<img src="docs/logo.svg" width="112" alt="spacewiz logo">
+<h1 align="center">spacewiz</h1>
 
-# spacewiz
+<p align="center">
+  Disk space analyzer for Windows with a sunburst chart and a treemap view.<br>
+  <a href="https://github.com/wdorninger/spacewiz/releases/latest">Download</a> ·
+  <a href="#usage">Usage</a> ·
+  <a href="#building-from-source">Build</a>
+</p>
 
-**See where your disk space went — in one glance.**
+<p align="center">
+  <img src="docs/sunburst.png" alt="Sunburst view of a drive" width="880">
+</p>
 
-A fast, modern disk space analyzer for Windows with an interactive sunburst chart and treemap.
-Written in Rust. A single `.exe`, no installer, no admin rights needed.
+spacewiz scans a drive or folder and shows how the space is distributed. The folder in focus is drawn in the
+centre; its contents are arranged in rings around it, one ring per directory level, with each segment's angle
+proportional to its size. Hovering a segment shows its details, clicking a folder zooms into it.
 
-![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows&logoColor=white)
-![Rust](https://img.shields.io/badge/Rust-2024-orange?logo=rust&logoColor=white)
-![Single exe](https://img.shields.io/badge/deploy-single%20.exe-2f6fd6)
+It ships as a single executable and does not need an installer or administrator rights.
 
-<br>
+## Features
 
-<img src="docs/sunburst.png" alt="spacewiz sunburst view of a whole drive" width="900">
+**Scanning**
 
-</div>
+- On NTFS volumes, when run as administrator, the Master File Table is read directly. A full drive is
+  indexed in seconds.
+- Without administrator rights, directories are enumerated in parallel (`FindFirstFileExW` on a thread
+  pool). A system drive with about 3.3 million entries takes roughly 20 seconds with a warm cache.
+- The chart is updated while a folder scan is running and can be navigated before the scan finishes.
+- Folders can be excluded by full path (e.g. `C:\Windows\WinSxS`) or by name (e.g. `node_modules`).
+- Junctions and symbolic links are not followed; hard-linked files are counted once.
 
----
+**Visualisation**
 
-## ✨ Highlights
+- Sunburst chart and squarified treemap, switchable from the toolbar.
+- Colouring by top-level folder, by file type, or by age of the newest file in each folder.
+- Hover details: size, share of parent and of the current view, file and folder count, modification
+  date, full path.
+- Animated zoom; navigation by click, mouse wheel, breadcrumbs, back/forward history and keyboard.
+- Free space of the drive is shown as a separate segment.
+- Light and dark theme, following the Windows setting by default.
 
-<table>
-<tr>
-<td width="50%" valign="top">
+**Analysis**
 
-### 🌀 Explosion chart
-Your folders as concentric rings: the folder in focus sits in the centre, deeper levels radiate outward,
-every slice sized by the space it takes. **Hover** a slice and it lifts out of the chart together with
-everything inside it, while a card shows its size, share, file count, newest file and path.
+- Search with wildcards, multiple terms and size filters (`*.iso >1GB`); matches are highlighted in the
+  chart and listed separately.
+- Cleanup hints for temporary folders, browser and package manager caches, build output, crash dumps and
+  the Recycle Bin. These are suggestions only; nothing is deleted automatically.
+- Duplicate file detection by size, partial hash and full content hash (xxh3). Online-only cloud files
+  (OneDrive, Synology Drive) are skipped so that they are not downloaded; hard links are not reported as
+  duplicates.
+- Lists of the largest files and of space used per file type.
 
-</td>
-<td width="50%" valign="top">
+**File operations**
 
-### ⚡ Fast — with or without admin
-As administrator, NTFS drives are read straight from the **Master File Table**, like WizTree: a whole drive
-in seconds. As a normal user, folders are walked in parallel on all cores — a full system drive with over
-3 million items in about 20 seconds.
+- Open, show in Explorer, copy path, rescan a folder, move to the Recycle Bin (with confirmation).
+- Drop a folder onto the window to scan it; drag an item out of the window to copy it elsewhere.
 
-</td>
-</tr>
-<tr>
-<td valign="top">
+<p align="center">
+  <img src="docs/treeview.png" alt="Treemap view" width="880">
+</p>
 
-### 👀 Live while scanning
-No waiting for a progress bar: the chart fills in as folders are read. Hover, zoom and explore while the
-scan runs — you stay where you are when it finishes.
+## Installation
 
-</td>
-<td valign="top">
+Download `spacewiz-<version>-windows-x64-portable.zip` from the
+[releases page](https://github.com/wdorninger/spacewiz/releases), extract it to any folder and run
+`spacewiz.exe`.
 
-### 🧭 Effortless navigation
-Click a folder to zoom in (smoothly animated), click the centre to go up. Mouse wheel in and out,
-breadcrumbs, back/forward (also with the mouse side buttons), `Backspace`, `Alt+←/→/↑`.
+Requirements: Windows 10 or 11, 64-bit.
 
-</td>
-</tr>
-<tr>
-<td valign="top">
+## Usage
 
-### 🔎 Search & highlight
-`Ctrl+F`, type `*.iso >1GB` — matches light up in the chart, everything else fades. Wildcards, several
-terms at once, size filters, `file:` / `folder:`.
+Select a drive in the left panel, use **Scan folder…**, or drop a folder onto the window.
 
-</td>
-<td valign="top">
+The fast MFT scan requires administrator rights. On an administrator account the toolbar offers a
+**Fast scan** button that restarts the program elevated; other accounts always use the directory scan.
 
-### 🧹 Cleanup hints
-Finds the usual space hogs — temp folders, browser and package caches (npm, cargo, pip, Maven, Gradle,
-NuGet), build output (`node_modules`, `target`, `bin`/`obj`), crash dumps, the Recycle Bin — and explains
-what each one is. Suggestions only; nothing is deleted behind your back.
-
-</td>
-</tr>
-<tr>
-<td valign="top">
-
-### 👯 Duplicate finder
-Same size → same first 64 KB → same full-content hash (xxh3), in parallel. Shows the space wasted per group.
-Online-only cloud files (OneDrive, Synology Drive…) are **never** read, so nothing gets downloaded, and hard
-links don't count as copies.
-
-</td>
-<td valign="top">
-
-### 🎨 Colour by folder, type or age
-Each top-level branch its own hue — or colour files by type, or by **age** (from "this week" to "untouched
-for years") to spot stale data at a glance.
-
-</td>
-</tr>
-</table>
-
----
-
-## 🗺️ Treemap view
-
-One click in the toolbar switches to a squarified treemap — same colours, same hover card, same search
-highlighting and right-click menu. Great for spotting the single huge file hiding in a sea of small ones.
-
-<div align="center">
-<img src="docs/treeview.png" alt="spacewiz treemap view" width="900">
-</div>
-
----
-
-## 🧰 Everything else
-
-| | |
-|---|---|
-| **Right-click menu** | Open · Show in Explorer · Copy path · Rescan folder · Find duplicates here · Skip in future scans · Move to Recycle Bin (asks first, chart updates in place) |
-| **Side tabs** | Folder tree with size bars · File types (click to highlight) · Largest files · Cleanup · Search results · Duplicates — pick the ones you want in the View menu |
-| **Skip folders** | Exclude slow or uninteresting folders by path (`C:\Windows\WinSxS`) or by name (`node_modules`) — halves the time of a full system-drive scan |
-| **Drag & drop** | Drop a folder or drive on the window to scan it; drag a slice or list row out to Explorer to copy the file |
-| **Drives panel** | All drives with label, usage bar and free space; free space also appears as a grey slice in the chart |
-| **Size modes** | File length or actual space on disk (compressed, sparse and cloud files counted correctly) |
-| **Look & feel** | Windows 11 style, Segoe UI, light and dark theme (follows Windows) |
-
----
-
-## 🚀 Getting started
-
-Download or build `spacewiz.exe` and run it — that's it. Pick a drive on the left, or drop a folder on the
-window.
+### Command line
 
 ```text
-spacewiz.exe                          open the window
-spacewiz.exe D:\Data                  open and scan a folder
-spacewiz.exe D:\Data --search "*.iso" scan, then search
-spacewiz.exe D:\Data --find-dupes     scan, then look for duplicate files
-spacewiz.exe --scan C:\ [--walk]      scan without a window: totals, time, largest items
-spacewiz.exe --dupes D:\Data          list duplicate files without a window
-spacewiz.exe --console                show the log in a console
+spacewiz.exe [path]                   Open the window and scan the given folder
+spacewiz.exe <path> --search <query>  Scan, then run a search
+spacewiz.exe <path> --find-dupes      Scan, then look for duplicate files
+spacewiz.exe --scan <path> [--walk]   Scan without a window and print totals and the largest items
+spacewiz.exe --dupes <path>           List duplicate files without a window
+spacewiz.exe --console                Show the log in a console window
 ```
 
-> 💡 **Want the MFT speed?** On an administrator account a **Fast scan** button appears in the toolbar — it
-> restarts spacewiz elevated. Standard users don't see it and always get the parallel walk.
+### Keyboard and mouse
 
-### Keyboard & mouse
+| Action                   | Input                                                    |
+|--------------------------|----------------------------------------------------------|
+| Zoom into folder         | Click, mouse wheel up                                    |
+| Up one level             | Click the centre, mouse wheel down, `Backspace`, `Alt+↑` |
+| Back / forward           | `Alt+←` / `Alt+→`, mouse side buttons                    |
+| Search                   | `Ctrl+F`; `Esc` clears the search and highlighting       |
+| Rescan current folder    | `F5`                                                     |
+| Open file                | Double-click                                             |
+| Context menu             | Right-click                                              |
 
-| Action | Keys / mouse |
-|---|---|
-| Zoom into a folder | Click · mouse wheel up · double-click in a list |
-| Up one level | Click the centre · mouse wheel down · `Backspace` · `Alt+↑` |
-| Back / forward | `Alt+←` / `Alt+→` · mouse side buttons |
-| Search | `Ctrl+F` · `Esc` clears search and highlight |
-| Rescan the folder in view | `F5` |
-| Open a file | Double-click |
+### Search syntax
 
-### Settings
+| Example        | Matches                                         |
+|----------------|-------------------------------------------------|
+| `report`       | Names containing "report"                       |
+| `*.iso`        | Names matching the wildcard (`*`, `?`)          |
+| `*.mp4 *.mkv`  | Either term                                     |
+| `>500MB`       | Items larger than 500 MB (also `<`, `>=`, `<=`) |
+| `file:`        | Files only (`folder:` for folders only)         |
 
-Everything is adjustable in the app (⚙) and saved to `config.toml` next to the exe — theme, side tabs,
-number of rings, size mode, colours, free space, skip list, minimum duplicate size. Comments in the file are
-kept when the app saves. The log is in `logs\spacewiz.log`. Set `SPACEWIZ_HOME` to keep both somewhere else.
+### Configuration
 
----
+Settings are changed in the program and stored in `config.toml` next to the executable, together with the
+log (`logs\spacewiz.log`). Set the environment variable `SPACEWIZ_HOME` to store them elsewhere.
 
-## ⚙️ How it works
+| Setting               | Description                                           |
+|-----------------------|-------------------------------------------------------|
+| `ui.view`             | `sunburst` or `treemap`                               |
+| `ui.color_by`         | `folder`, `type` or `age`                             |
+| `ui.size_mode`        | `logical` (file length) or `allocated` (size on disk) |
+| `ui.ring_depth`       | Number of levels shown                                |
+| `scan.exclude`        | Folders to skip, by path or name                      |
+| `scan.prefer_mft`     | Use the MFT reader when running as administrator      |
+| `dupes.min_size_mb`   | Smallest file size considered for duplicates          |
 
-- **MFT reader** (administrator, NTFS): opens the volume, reads the `$MFT` data runs, then the whole table in
-  large sequential chunks; records are parsed in parallel (fixups, `$FILE_NAME`, `$DATA`,
-  `$STANDARD_INFORMATION`) and linked into a tree by parent record number.
-- **Parallel walk** (everyone): `FindFirstFileExW` with large fetch on a work-stealing thread pool, straight
-  into a shared tree with running totals — which is what lets the chart draw while scanning. Junctions and
-  symbolic links are not followed, so nothing is counted twice.
-- **Rendering**: [egui](https://github.com/emilk/egui) — every slice is a tessellated mesh with hairline gaps
-  and a soft gradient; zooming interpolates each slice from its old place to its new one.
+## Building from source
 
-<details>
-<summary><b>Code map</b></summary>
-
-| File | What it does |
-|---|---|
-| `src/main.rs` | Arguments, `--scan`, `--dupes`, window setup |
-| `src/scan/mod.rs` | Picks MFT or walk, background scan thread, progress counters, live tree, skip list |
-| `src/scan/mft.rs` | Raw MFT reader |
-| `src/scan/walk.rs` | Parallel folder walk into a shared tree; flags cloud placeholders |
-| `src/tree.rs` | Arena tree: totals, newest file per folder, sorting, remove, replace subtree, type totals, largest files |
-| `src/chart.rs` | Shared by both views: colours (folder/type/age), highlighting, hover card, age legend |
-| `src/sunburst.rs` | Sunburst layout, painting, hit testing, hover lift, zoom animation |
-| `src/treemap.rs` | Squarified treemap layout, painting, hit testing, zoom animation |
-| `src/search.rs` | Query parsing (wildcards, size filters) and search |
-| `src/cleanup.rs` | Rules for caches, temp and build folders |
-| `src/dupes.rs` | Duplicate finder (size → partial hash → full hash) |
-| `src/ui.rs` | The window: drives, toolbar, search, live view, side tabs, menus, drag & drop, settings |
-| `src/theme.rs` | Windows 11 style, fonts, palettes, app icon |
-| `src/drives.rs` · `src/actions.rs` | Drives and free space · elevation, open, Explorer, Recycle Bin |
-| `src/config.rs` · `src/default_config.toml` | Settings |
-
-</details>
-
----
-
-## 🔨 Building
-
-Rust 1.85+ (edition 2024) with the MSVC toolchain. Build from PowerShell (Git Bash can put GNU `link` ahead of
-MSVC's).
+Requires Rust 1.85 or later (edition 2024) and the MSVC toolchain.
 
 ```powershell
-cargo build --release   # target\release\spacewiz.exe — one exe, C runtime linked statically
+cargo build --release
 cargo test
 ```
 
-## 📝 Notes
+The executable is written to `target\release\spacewiz.exe`. The C runtime is linked statically, so no
+redistributable is needed. Build from PowerShell or a Developer Command Prompt; Git Bash may pick up GNU
+`link` instead of the MSVC linker.
 
-- MFT mode needs NTFS and administrator rights; FAT32, exFAT, ReFS and network drives are always walked.
-- Hard-linked files are counted once; alternate data streams are not counted.
-- In walk mode, folders Windows refuses to list (other users' profiles, `System Volume Information`) are left
-  out — the scan badge in the toolbar tells you how many.
-- The very first scan after a reboot is slower: Windows has to read the folder structure from disk instead of
-  from its cache.
+### Project layout
+
+| Path                 | Contents                                                |
+|----------------------|---------------------------------------------------------|
+| `src/scan/mft.rs`    | NTFS Master File Table reader                           |
+| `src/scan/walk.rs`   | Parallel directory scan                                 |
+| `src/scan/mod.rs`    | Scan selection, progress reporting, exclusions          |
+| `src/tree.rs`        | In-memory file tree and aggregation                     |
+| `src/sunburst.rs`    | Sunburst layout, rendering and hit testing              |
+| `src/treemap.rs`     | Treemap layout, rendering and hit testing               |
+| `src/chart.rs`       | Colours, highlighting and tooltips shared by both views |
+| `src/search.rs`      | Search query parser and matcher                         |
+| `src/cleanup.rs`     | Cleanup rules                                           |
+| `src/dupes.rs`       | Duplicate file detection                                |
+| `src/ui.rs`          | Main window                                             |
+
+The user interface is built with [egui](https://github.com/emilk/egui) / eframe.
+
+## Limitations
+
+- The MFT reader supports NTFS only; FAT32, exFAT, ReFS and network drives are always scanned directory by
+  directory.
+- In directory-scan mode, folders that Windows does not allow the current user to list (for example other
+  users' profiles) are skipped. The number of skipped folders is shown in the toolbar.
+- Alternate data streams are not included in sizes.
+- The first scan after a restart is slower, because directory metadata is not yet in the file system cache.
