@@ -1,0 +1,31 @@
+# spacewiz settings. Changes made in the app are written back here; comments are kept.
+
+[ui]
+# "system", "light" or "dark"
+theme = "system"
+# "sunburst" or "treemap"
+view = "sunburst"
+# Side view tabs next to the chart (also in the View menu); Search and Duplicates appear when used
+show_tree = true
+show_types = false
+show_top_files = false
+show_cleanup = true
+# Number of rings around the centre (deeper levels appear after zooming in)
+ring_depth = 7
+# "logical" (file length) or "allocated" (space on disk, smaller for compressed/sparse, larger for tiny files)
+size_mode = "logical"
+# "folder" (each top-level branch its own hue), "type" (colour files by extension) or "age" (newest file)
+color_by = "folder"
+# Show the drive's free space as a grey sector when a whole drive is in view
+show_free_space = true
+
+[scan]
+# Read the NTFS Master File Table directly when running as administrator (seconds instead of minutes)
+prefer_mft = true
+# Folders not to scan: full paths (with a backslash) or folder names anywhere, e.g.
+# exclude = ['C:\Windows\WinSxS', "node_modules"]   (single quotes: backslashes stay as they are)
+exclude = []
+
+[dupes]
+# Smallest file size (MB) the duplicate finder looks at
+min_size_mb = 1
